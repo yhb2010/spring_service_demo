@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:jms="http://www.springframework.org/schema/jms" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:amq="http://activemq.apache.org/schema/core" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/jms
+        http://www.springframework.org/schema/jms/spring-jms.xsd
+        http://activemq.apache.org/schema/core
+        http://activemq.apache.org/schema/core/activemq-core.xsd
+		http://www.springframework.org/schema/security
+        http://www.springframework.org/schema/security/spring-security-4.0.xsd">
+
+	<import resource="jms.xml" />
+
+	<context:component-scan base-package="com.mvc" />
+
+	<!-- 使用注解将请求参数绑定到控制器的方法参数上进行校验以及信息转换 -->
+	<mvc:annotation-driven />
+
+	<!-- 注册rmi服务 -->
+	<!-- p:service-ref：需要将该bean作为一个rmi服务 -->
+	<!-- p:serviceName：命名rmi服务 -->
+	<!-- p:registryPort：rmi服务的端口 -->
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter"
+		p:service-ref="helloService" p:serviceName="HelloService"
+		p:registryPort="1100" p:serviceInterface="com.mvc.chapter10.service.HelloService" />
+	<bean id="helloService" class="com.mvc.chapter10.service.HelloServiceRmiImpl" />
+
+	<!-- 注册hessian服务 -->
+	<!-- p:service-ref：需要将该bean作为一个hessian服务 -->
+	<!-- Hessian的远程服务名为/hessianService -->
+	<bean id="hessianTest"
+		class="org.springframework.remoting.caucho.HessianServiceExporter"
+		p:service-ref="helloServiceHessian" p:serviceInterface="com.mvc.chapter10.service.HelloService" />
+	<bean id="helloServiceHessian" class="com.mvc.chapter10.service.HelloServiceHessianImpl" />
+	<!-- hessian服务地址发布为http://localhost:8081/hessianTest.service -->
+	<bean class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+		<property name="mappings">
+			<value>
+				/hessianTest.service=hessianTest
+			</value>
+		</property>
+	</bean>
+
+	<!-- 注册burlap服务 -->
+	<bean id="burlapTest"
+		class="org.springframework.remoting.caucho.BurlapServiceExporter"
+		p:service-ref="helloServiceBurlap" p:serviceInterface="com.mvc.chapter10.service.HelloService" />
+	<bean id="helloServiceBurlap" class="com.mvc.chapter10.service.HelloServiceBurlapImpl" />
+	<!-- hessian服务地址发布为http://localhost:8081/burlapTest.service -->
+	<bean class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+		<property name="mappings">
+			<value>
+				/burlapTest.service=burlapTest
+			</value>
+		</property>
+	</bean>
+
+	<!-- 注册http invoker服务 -->
+	<bean id="invokerTest"
+		class="org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter"
+		p:service-ref="helloServiceInvoker" p:serviceInterface="com.mvc.chapter10.service.HelloService" />
+	<bean id="helloServiceInvoker" class="com.mvc.chapter10.service.HelloServiceInvokerImpl" />
+	<!-- http invoker服务地址发布为http://localhost:8081/invokerTest.service -->
+	<bean class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+		<property name="mappings">
+			<value>
+				/invokerTest.service=invokerTest
+			</value>
+		</property>
+	</bean>
+
+	<!-- jax-ws快速发布webservice -->
+	<bean class="org.springframework.remoting.jaxws.SimpleJaxWsServiceExporter"
+		p:baseAddress="http://localhost:8083/services/" />
+
+</beans>
