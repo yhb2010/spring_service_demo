@@ -1,0 +1,1 @@
+访问webservice部署描述符：http://localhost:8083/services/jaxwebservice?wsdl
